@@ -53,6 +53,14 @@ class ParsedForecast:
 
         self.notes = []
 
+    def __str__(self):
+        return "{location}\n" \
+               "{source_text} ({source})".format(
+            location=self.location,
+            source_text=self.source_text,
+            source=self.source
+        )
+
 
 class ForecastParser(ABC):
     @abstractmethod
@@ -68,7 +76,7 @@ class MountRainierRecForecast(ForecastParser):
     def get_empty_pf():
         pf = ParsedForecast()
         pf.location = Location.MORA
-        pf.src = ForecastSource.MORA_REC_FCST
+        pf.source = ForecastSource.MORA_REC_FCST
         return pf
 
     def parse_forecast(self, text):
@@ -76,7 +84,11 @@ class MountRainierRecForecast(ForecastParser):
 
         bs = BeautifulSoup(text, 'html.parser')
 
-        print(bs)
+        pf.source_text = bs.b.contents[2].strip()
+
+        raw_time = bs.b.contents[4].strip()
+        # todo parse this into a datetime object
+        # pf.time_issued = parsed_time()
 
         return pf
 
@@ -88,8 +100,10 @@ class MountRainierRecForecast(ForecastParser):
 def main():
     raw_text = scrape_url(MORA_REC_FCST_URL)
     fcst_parser = MountRainierRecForecast()
+
     pf = fcst_parser.parse_forecast(raw_text)
 
+    print(pf)
 
 if __name__ == "__main__":
     main()
