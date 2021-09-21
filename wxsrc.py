@@ -63,6 +63,11 @@ class ParsedForecast:
 
 
 class ForecastParser(ABC):
+    @staticmethod
+    @abstractmethod
+    def get_empty_pf():
+        pass
+
     @abstractmethod
     def parse_forecast(self, text):
         pass
@@ -104,6 +109,7 @@ def main():
     pf = fcst_parser.parse_forecast(raw_text)
 
     print(pf)
+
 
 if __name__ == "__main__":
     main()
