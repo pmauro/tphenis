@@ -7,6 +7,10 @@
 
 import requests
 
+from abc import ABC, abstractmethod
+from bs4 import BeautifulSoup
+from enum import Enum, auto
+
 # ---------------------------------------------------------------------------------------------------------------------
 # GLOBALS
 # ---------------------------------------------------------------------------------------------------------------------
@@ -14,8 +18,67 @@ import requests
 MORA_REC_FCST_URL = "https://a.atmos.washington.edu/data/rainier_report.html"
 
 # ---------------------------------------------------------------------------------------------------------------------
+# METHODS
+# ---------------------------------------------------------------------------------------------------------------------
+
+
+def scrape_url(url):
+    page = requests.get(url)
+    return page.text
+
+
+# ---------------------------------------------------------------------------------------------------------------------
 # CLASSES
 # ---------------------------------------------------------------------------------------------------------------------
+
+class Location(Enum):
+    MORA = auto()
+
+
+class ForecastSource(Enum):
+    MORA_REC_FCST = auto()
+
+
+class ParsedForecast:
+    def __init__(self):
+        self.location = None
+        self.source = None
+
+        self.source_text = None
+        self.time_issued = None
+
+        self.synopsis = None
+        self.period_fcsts = dict()
+        self.elev_forecasts = dict()
+
+        self.notes = []
+
+
+class ForecastParser(ABC):
+    @abstractmethod
+    def parse_forecast(self, text):
+        pass
+
+
+class MountRainierRecForecast(ForecastParser):
+    def __init__(self):
+        pass
+
+    @staticmethod
+    def get_empty_pf():
+        pf = ParsedForecast()
+        pf.location = Location.MORA
+        pf.src = ForecastSource.MORA_REC_FCST
+        return pf
+
+    def parse_forecast(self, text):
+        pf = MountRainierRecForecast.get_empty_pf()
+
+        bs = BeautifulSoup(text, 'html.parser')
+
+        print(bs)
+
+        return pf
 
 # ---------------------------------------------------------------------------------------------------------------------
 # TEST CODE
@@ -23,8 +86,9 @@ MORA_REC_FCST_URL = "https://a.atmos.washington.edu/data/rainier_report.html"
 
 
 def main():
-    page = requests.get(MORA_REC_FCST_URL)
-    print(page.text)
+    raw_text = scrape_url(MORA_REC_FCST_URL)
+    fcst_parser = MountRainierRecForecast()
+    pf = fcst_parser.parse_forecast(raw_text)
 
 
 if __name__ == "__main__":
