@@ -133,8 +133,15 @@ class MountRainierRecForecast(ForecastParser):
 
         # Period forecasts
         # These are split between two areas, the near-term forecast (between '&amp;&amp;' and '&amp;&amp;')
-        # and betwween '.Extended Forecast...' and '$$'
-        # print(fcst_body)
+        # and between '.Extended Forecast...' and '$$'
+        match = re.search("&amp;&amp;(.*?)&amp;&amp;", fcst_body_stripped)
+        if match and len(match.groups()) == 1:
+            raw_ntef_string = match.group(1)
+            print(raw_ntef_string)
+            #pf.synopsis = MountRainierRecForecast.clean_string(raw_syn_string)
+        else:
+            logging.warning("Could not parse near-term daily forecasts.")
+        #print(fcst_body)
 
         return pf
 
