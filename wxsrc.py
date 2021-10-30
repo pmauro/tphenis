@@ -50,21 +50,26 @@ class ParsedForecast:
         self.time_issued = None
 
         self.synopsis = None
+        self.period_fcsts_text = None
         self.period_fcsts = dict()
         self.elev_forecasts = dict()
 
         self.notes = []
 
     def __str__(self):
+        def clean_print(text, def_text=""): return text if text else def_text
+
         return "{location}\n" \
                "{source_text} ({source})\n" \
                "{time_issued}\n" \
-               "{synopsis}".format(
-            location=self.location,
-            source_text=self.source_text,
-            source=self.source,
-            time_issued=self.time_issued,
-            synopsis=self.synopsis
+               "{synopsis}\n" \
+               "{pf_text}".format(
+            location=clean_print(self.location),
+            source_text=clean_print(self.source_text),
+            source=clean_print(self.source),
+            time_issued=clean_print(self.time_issued),
+            synopsis=clean_print(self.synopsis),
+            pf_text=clean_print(self.period_fcsts_text)
         )
 
 
@@ -90,9 +95,16 @@ class MountRainierRecForecast(ForecastParser):
         pf.source = ForecastSource.MORA_REC_FCST
         return pf
 
-    def clean_string(self, raw_string):
+    @staticmethod
+    def clean_string(raw_string):
         # todo remove any instances of back-to-back spaces, replacing them with a single space
         return raw_string
+
+    def parse_period_forecasts(self, pf_string):
+        # 1) Separate date and TOD qualifier from forecast text
+        # 2) Convert day of week to date; convert TOD qualifier and near-term/extended to Enums
+        # 3) Push parsed forecast onto list?  Or should we keep this structure as a dict?
+        pass
 
     def parse_forecast(self, text):
         pf = MountRainierRecForecast.get_empty_pf()
@@ -101,6 +113,7 @@ class MountRainierRecForecast(ForecastParser):
 
         pf.source_text = bs.b.contents[2].strip()
 
+        # Time Issued
         raw_time = bs.b.contents[4].strip()
         pf.time_issued = raw_time
         # todo parse this into a datetime object
@@ -109,15 +122,22 @@ class MountRainierRecForecast(ForecastParser):
         fcst_body = str(bs.pre)
         fcst_body_stripped = fcst_body.replace("\n", " ")
 
+        # Synopsis
         # We're looking for all data between '.SYNOPSIS...' and the first '&amp;&amp;'
         match = re.search("\.SYNOPSIS\.\.\.(.*?)&amp;&amp;", fcst_body_stripped)
         if match and len(match.groups()) == 1:
             raw_syn_string = match.group(1)
-            pf.synopsis = self.clean_string(raw_syn_string)
+            pf.synopsis = MountRainierRecForecast.clean_string(raw_syn_string)
         else:
             logging.warning("Could not parse synopsis from forecast.")
 
+        # Period forecasts
+        # These are split between two areas, the near-term forecast (between '&amp;&amp;' and '&amp;&amp;')
+        # and betwween '.Extended Forecast...' and '$$'
+        # print(fcst_body)
+
         return pf
+
 
 # ---------------------------------------------------------------------------------------------------------------------
 # TEST CODE
