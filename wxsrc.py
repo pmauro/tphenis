@@ -55,10 +55,12 @@ class ParsedForecast:
 
     def __str__(self):
         return "{location}\n" \
-               "{source_text} ({source})".format(
+               "{source_text} ({source})\n" \
+               "{time_issued}".format(
             location=self.location,
             source_text=self.source_text,
-            source=self.source
+            source=self.source,
+            time_issued=self.time_issued
         )
 
 
@@ -92,6 +94,7 @@ class MountRainierRecForecast(ForecastParser):
         pf.source_text = bs.b.contents[2].strip()
 
         raw_time = bs.b.contents[4].strip()
+        pf.time_issued = raw_time
         # todo parse this into a datetime object
         # pf.time_issued = parsed_time()
 
