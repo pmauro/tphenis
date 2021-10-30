@@ -5,6 +5,7 @@
 # IMPORTS
 # ---------------------------------------------------------------------------------------------------------------------
 
+import re
 import requests
 
 from abc import ABC, abstractmethod
@@ -56,11 +57,13 @@ class ParsedForecast:
     def __str__(self):
         return "{location}\n" \
                "{source_text} ({source})\n" \
-               "{time_issued}".format(
+               "{time_issued}\n" \
+               "{synopsis}".format(
             location=self.location,
             source_text=self.source_text,
             source=self.source,
-            time_issued=self.time_issued
+            time_issued=self.time_issued,
+            synopsis=self.synopsis
         )
 
 
@@ -86,6 +89,10 @@ class MountRainierRecForecast(ForecastParser):
         pf.source = ForecastSource.MORA_REC_FCST
         return pf
 
+    def clean_string(self, raw_string):
+        # todo remove any instances of multiple spaces
+        return raw_string
+
     def parse_forecast(self, text):
         pf = MountRainierRecForecast.get_empty_pf()
 
@@ -97,6 +104,18 @@ class MountRainierRecForecast(ForecastParser):
         pf.time_issued = raw_time
         # todo parse this into a datetime object
         # pf.time_issued = parsed_time()
+
+        fcst_body = str(bs.pre)
+        fcst_body_stripped = fcst_body.replace("\n", " ")
+
+        # We're looking for all data between '.SYNOPSIS...' and the first '&amp;&amp;'
+        match = re.search("\.SYNOPSIS\.\.\.(.*?)&amp;&amp;", fcst_body_stripped)
+        if match:
+            raw_syn_string = match.group(1)
+            pf.synopsis = self.clean_string(raw_syn_string)
+        else:
+            # what do we do on errors?
+            pass
 
         return pf
 
