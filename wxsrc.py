@@ -5,6 +5,7 @@
 # IMPORTS
 # ---------------------------------------------------------------------------------------------------------------------
 
+import logging
 import re
 import requests
 
@@ -90,7 +91,7 @@ class MountRainierRecForecast(ForecastParser):
         return pf
 
     def clean_string(self, raw_string):
-        # todo remove any instances of multiple spaces
+        # todo remove any instances of back-to-back spaces, replacing them with a single space
         return raw_string
 
     def parse_forecast(self, text):
@@ -110,12 +111,11 @@ class MountRainierRecForecast(ForecastParser):
 
         # We're looking for all data between '.SYNOPSIS...' and the first '&amp;&amp;'
         match = re.search("\.SYNOPSIS\.\.\.(.*?)&amp;&amp;", fcst_body_stripped)
-        if match:
+        if match and len(match.groups()) == 1:
             raw_syn_string = match.group(1)
             pf.synopsis = self.clean_string(raw_syn_string)
         else:
-            # what do we do on errors?
-            pass
+            logging.warning("Could not parse synopsis from forecast.")
 
         return pf
 
