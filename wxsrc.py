@@ -11,7 +11,8 @@ import requests
 
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
-from enum import Enum, auto
+
+from util.enums import *
 
 # ---------------------------------------------------------------------------------------------------------------------
 # GLOBALS
@@ -32,13 +33,6 @@ def scrape_url(url):
 # ---------------------------------------------------------------------------------------------------------------------
 # CLASSES
 # ---------------------------------------------------------------------------------------------------------------------
-
-class Location(Enum):
-    MORA = auto()
-
-
-class ForecastSource(Enum):
-    MORA_REC_FCST = auto()
 
 
 class ParsedForecast:
