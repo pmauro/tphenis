@@ -11,7 +11,7 @@ import re
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
 
-from util.enums import *
+import util.wxenums as wxenums
 import util.fcast_ingest as fcast_ingest
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -69,8 +69,8 @@ class MountRainierRecForecast(ForecastParser):
     @staticmethod
     def get_empty_pf():
         pf = ParsedForecast()
-        pf.location = Location.MORA
-        pf.source = ForecastSource.MORA_REC_FCST
+        pf.location = wxenums.Location.MORA
+        pf.source = wxenums.ForecastSource.MORA_REC_FCST
         return pf
 
     @staticmethod
@@ -130,7 +130,7 @@ class MountRainierRecForecast(ForecastParser):
 
 
 def main():
-    raw_text = fcast_ingest.get_raw_forecast(ForecastSource.MORA_REC_FCST, Location.MORA)
+    raw_text = fcast_ingest.get_raw_forecast(wxenums.ForecastSource.MORA_REC_FCST, wxenums.Location.MORA)
     fcst_parser = MountRainierRecForecast()
 
     pf = fcst_parser.parse_forecast(raw_text)

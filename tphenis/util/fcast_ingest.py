@@ -7,15 +7,15 @@
 import logging
 import requests
 
-from .enums import *
+from . import wxenums
 
 # ---------------------------------------------------------------------------------------------------------------------
 # GLOBALS
 # ---------------------------------------------------------------------------------------------------------------------
 
 SOURCE_PATHS = {
-    ForecastSource.MORA_REC_FCST: {
-        Location.MORA: "https://a.atmos.washington.edu/data/rainier_report.html"
+    wxenums.ForecastSource.MORA_REC_FCST: {
+        wxenums.Location.MORA: "https://a.atmos.washington.edu/data/rainier_report.html"
     }
 }
 

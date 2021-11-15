@@ -1,5 +1,5 @@
 # forecast cache
-fcache/mora_rec_fcst/**
+data/mora_rec_fcst/**
 
 # PyCharm files
 .idea

@@ -12,14 +12,13 @@ import glob
 import hashlib
 from pytz import timezone
 
-from enums import *
-import fcast_ingest
+from . import fcast_ingest
 
 # ---------------------------------------------------------------------------------------------------------------------
 # GLOBALS
 # ---------------------------------------------------------------------------------------------------------------------
 
-CACHE_DIR_NAME = "fcache"
+CACHE_DIR_NAME = "data"
 STANDARD_TIMEZONE = "US/Pacific"
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -109,6 +108,3 @@ def get_raw_forecast(source, location, use_cache=True, cache_timeout=300, save_f
         f.write(new_fcast_str)
 
     return new_fcast_str
-
-
-forecast_str = get_raw_forecast(ForecastSource.MORA_REC_FCST, Location.MORA)
