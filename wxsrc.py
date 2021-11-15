@@ -7,28 +7,12 @@
 
 import logging
 import re
-import requests
 
 from abc import ABC, abstractmethod
 from bs4 import BeautifulSoup
 
 from util.enums import *
-
-# ---------------------------------------------------------------------------------------------------------------------
-# GLOBALS
-# ---------------------------------------------------------------------------------------------------------------------
-
-MORA_REC_FCST_URL = "https://a.atmos.washington.edu/data/rainier_report.html"
-
-# ---------------------------------------------------------------------------------------------------------------------
-# METHODS
-# ---------------------------------------------------------------------------------------------------------------------
-
-
-def scrape_url(url):
-    page = requests.get(url)
-    return page.text
-
+import util.fcast_ingest as fcast_ingest
 
 # ---------------------------------------------------------------------------------------------------------------------
 # CLASSES
@@ -146,7 +130,7 @@ class MountRainierRecForecast(ForecastParser):
 
 
 def main():
-    raw_text = scrape_url(MORA_REC_FCST_URL)
+    raw_text = fcast_ingest.get_raw_forecast(ForecastSource.MORA_REC_FCST, Location.MORA)
     fcst_parser = MountRainierRecForecast()
 
     pf = fcst_parser.parse_forecast(raw_text)
