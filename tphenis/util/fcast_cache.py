@@ -114,22 +114,31 @@ def get_raw_forecast(source, location, use_cache=True, cache_timeout=300, save_f
 
     LOGGER.debug("Attempting to save forecast")
     new_fcst_hash = hash_forecast(new_fcast_str)
+    cache_paths_today = get_cache_paths(cache_dir, yyyymmdd_today)
 
-    # If the forecast is the same as a forecast from yesterday, make a symlink with the '0' index
-    cache_paths = get_cache_paths(cache_dir, yyyymmdd_yesterday)
-    cache_match = look_for_hash(cache_paths, new_fcst_hash)
-    if cache_match is not None:
-        LOGGER.info("Current forecast matches cached forecast: {}".format(cache_match))
-        c_fpath = os.path.join(cache_dir, "{}.0.txt".format(yyyymmdd_today))
-        LOGGER.info("Making symlink: {}".format(c_fpath))
-        os.makedirs(os.path.dirname(c_fpath), exist_ok=True)
-        os.symlink(os.path.relpath(cache_match, start=cache_dir), c_fpath)
-        return new_fcast_str
+    # If we don't have a forecast saved for today, see if there's one from yesterday that is identical, and create
+    # a symlink.  This happens because forecast are issued in the mid-afternoon and mid-morning, so the mid-afternoon
+    # forecast will carry over after midnight.
+    if len(cache_paths_today) == 0:
+        # If the forecast is the same as a forecast from yesterday, make a symlink with the '0' index
+        cache_paths_yesterday = get_cache_paths(cache_dir, yyyymmdd_yesterday)
+        cache_match = look_for_hash(cache_paths_yesterday, new_fcst_hash)
+        if cache_match is not None:
+            LOGGER.info("Current forecast matches cached forecast: {}".format(cache_match))
+
+            c_fpath = os.path.join(cache_dir, "{}.0.txt".format(yyyymmdd_today))
+            if os.path.exists(c_fpath):
+                LOGGER.error("Symlink path already exists: {}".format(c_fpath))
+            else:
+                LOGGER.info("Making symlink: {}".format(c_fpath))
+                os.makedirs(os.path.dirname(c_fpath), exist_ok=True)
+                os.symlink(os.path.relpath(cache_match, start=cache_dir), c_fpath)
+
+            return new_fcast_str
 
     # If we have a match from today, do nothing
-    cache_paths = get_cache_paths(cache_dir, yyyymmdd_today)
-    cache_match = look_for_hash(cache_paths, new_fcst_hash)
-    num_symlinks = look_for_symlinks(cache_paths)
+    cache_match = look_for_hash(cache_paths_today, new_fcst_hash)
+    num_symlinks = look_for_symlinks(cache_paths_today)
     if cache_match is not None:
         LOGGER.info("Current forecast matches cached forecast: {}".format(cache_match))
         return new_fcast_str
@@ -141,11 +150,14 @@ def get_raw_forecast(source, location, use_cache=True, cache_timeout=300, save_f
         index_offset = 0
 
     # If we got here, we didn't match a previous forecast
-    c_fpath = os.path.join(cache_dir, "{}.{}.txt".format(yyyymmdd_today, len(cache_paths) + index_offset))
-    LOGGER.info("Writing forecast to cache: {}".format(c_fpath))
-    os.makedirs(os.path.dirname(c_fpath), exist_ok=True)
-    with open(c_fpath, 'w') as f:
-        f.write(new_fcast_str)
-    os.chmod(c_fpath, 0o400)
+    c_fpath = os.path.join(cache_dir, "{}.{}.txt".format(yyyymmdd_today, len(cache_paths_today) + index_offset))
+    if os.path.exists(c_fpath):
+        LOGGER.error("Cached file already exists:  {}".format(c_fpath))
+    else:
+        LOGGER.info("Writing forecast to cache: {}".format(c_fpath))
+        os.makedirs(os.path.dirname(c_fpath), exist_ok=True)
+        with open(c_fpath, 'w') as f:
+            f.write(new_fcast_str)
+        os.chmod(c_fpath, 0o400)
 
     return new_fcast_str
