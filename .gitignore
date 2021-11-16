@@ -1,8 +1,15 @@
+# cron logs
+cron
+
 # forecast cache
-data/mora_rec_fcst/**
+data/**/*.txt
 
 # PyCharm files
 .idea
 
 # Virtual environment
 venv*
+.python-version
+
+# python compiles
+__pycache__
