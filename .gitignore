@@ -4,6 +4,9 @@ cron
 # forecast cache
 data/**/*.txt
 
+# files with credientials
+tphenis/util/email_creds.py
+
 # PyCharm files
 .idea
 
